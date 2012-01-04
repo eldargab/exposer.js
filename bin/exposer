@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var PATH = require('path');
+
+function relativeToCwd (path) {
+    return PATH.relative(process.cwd(), path);
+}
+
+program.version('0.0.0');
+
+program
+    .command('expose <module>')
+    .description('Exposes commonJS <module> to the client-side. <module> should be specified relative to --root')
+    .option('-r, --root [dir]', 'Root dir. Defaults to current working directory', relativeToCwd, process.cwd())
+    .option('-t, --target <dir>', 'Target directory for exposed module', relativeToCwd)
+    .action(function (package, options) {
+        var root = options.root || process.cwd();
+        package = PATH.resolve(root, package);
+        require('../lib').expose(package, root, options.target);
+    });
+
+program.parse(process.argv);
