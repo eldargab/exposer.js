@@ -3,8 +3,15 @@
     "description": "Exposes commonJs modules to the client-side",
     "version": "v0.0.0",
     "repository": { "type": "git", "url": "https://github.com/eldargab/exposer.js" },
-    "bin": { "exposer": "./bin/exposer" },
+    "main": "./lib",
     "dependencies": {
-        "commander": "*"
+        "commander": "*",
+        "client-require": "git://github.com/eldargab/client-require.git",
+        "mkdirp": "*",
+        "minimatch": "*"
+    },
+    "devDependencies": {
+        "mocha": "1.x",
+        "should": "*"
     }
 }

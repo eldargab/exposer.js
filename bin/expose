@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+var program = require('commander')
+
+program.version('0.0.0');
+
+program
+    .option('-r, --root [dir]', 'Base dir to determine module names. Defaults to cwd.')
+    .option('-t, --target <dir>', 'Target directory for compiled modules.')
+    .option('-i, --ignore <patterns>', 'Ignore modules under matched paths', list)
+    .option('-R, --recompile', 'Recompile even if target is uptodate')
+
+program
+    .command('* <path>')
+    .description('Expose modules under the <path>. <path> should be specified relative to --root dir')
+    .action(function (path) {
+        Compile('Expose', path).exec()
+    })
+
+program
+    .command('bundle <path>')
+    .description('Compile modules under the <path> into a single script')
+    .option('--include-require')
+    .option('--include-async-require')
+    .option('-m, --main <file>', 'Main file')
+    .option('-v, --var <name>', 'Global name')
+    .action(function (path, options) {
+        var c = Compile('Bundle', path)
+        c.main = options.main
+        c['var'] = options['var']
+        c.includeRequire = options.includeRequire
+        c.includeAsyncRequire = options.includeAsyncRequire
+        c.exec()
+    })
+
+program.parse(process.argv)
+
+function Compile (method, path) {
+    if (!program.target) throw new Error('--target option not specified')
+    var Compiler = require('..')[method]
+    var c = new Compiler(program.root || process.cwd(), path, program.target)
+    c.excludes = c.excludes.concat(program.ignore || [])
+    c.recompile = program.recompile
+    debugger
+    return c
+}
+
+function list (val) {
+    return val.split(/\s*,\s*/g)
+}
