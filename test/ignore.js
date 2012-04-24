@@ -1,7 +1,8 @@
-var Ignore = require('../lib/ignore')
+var Ignore = require('../lib/util/ignore')
 
 function test (pattern, path) {
-    var i = new Ignore([pattern], '/')
+    var i = new Ignore('/')
+    i.add(pattern)
     var isDir = false
     path = path.replace(/\/$/, function () {
         isDir = true

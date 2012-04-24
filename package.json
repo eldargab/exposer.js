@@ -4,6 +4,7 @@
     "version": "v0.0.0",
     "repository": { "type": "git", "url": "https://github.com/eldargab/exposer.js" },
     "main": "./lib",
+    "bin": "./bin/expose",
     "dependencies": {
         "commander": "*",
         "client-require": "git://github.com/eldargab/client-require.git",
@@ -11,7 +12,7 @@
         "minimatch": "*"
     },
     "devDependencies": {
-        "mocha": "1.x",
+        "mocha": "*",
         "should": "*"
     }
 }
