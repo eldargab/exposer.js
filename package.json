@@ -1,13 +1,13 @@
 {
     "name": "exposer",
-    "description": "Exposes commonJs modules to the client-side",
-    "version": "v0.0.0",
+    "description": "Compiles node modules to the browser",
+    "version": "0.0.0",
     "repository": { "type": "git", "url": "https://github.com/eldargab/exposer.js" },
-    "main": "./lib",
-    "bin": "./bin/expose",
+    "keywords": ["require", "browser", "compile", "commonjs"],
+    "scripts": {
+        "test": "mocha -R spec"
+    },
     "dependencies": {
-        "commander": "*",
-        "client-require": "git://github.com/eldargab/client-require.git",
         "mkdirp": "*",
         "minimatch": "*"
     },

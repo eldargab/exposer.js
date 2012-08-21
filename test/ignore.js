@@ -1,30 +1,20 @@
-var Ignore = require('../lib/util/ignore')
+var Ignore = require('../lib/util').Ignore
+var matched = true
 
-function test (pattern, path) {
-    var i = new Ignore('/')
-    i.add(pattern)
-    var isDir = false
-    path = path.replace(/\/$/, function () {
-        isDir = true
-        return ''
-    })
-    var matched = i.match(path, isDir)
-    return {
-        matched: function () {
-            matched.should.be.true
-        },
-        unmatched: function () {
-            matched.should.be.false
-        }
-    }
-}
-
-describe('Ignore', function () {
-    it('test', function () {
-        test('bin/', 'hello/bin/').matched()
-        test('/bin/', 'hello/bin/').unmatched()
-        test('/bin/', '/bin/').matched()
-        test('/bin/', '/bin').unmatched()
-        test('*.json', '/package.json').matched()
-    })
+describe('Ignore patterns', function () {
+    test('bin/', '/hello/bin/', matched)
+    test('/bin/', '/hello/bin/')
+    test('/bin/', '/bin/', matched)
+    test('/bin/', '/bin')
+    test('*.json', '/package.json', matched)
 })
+
+function test (pattern, path, match) {
+    it(pattern + ' should' + (match ? '' : ' NOT') + ' match ' + path, function () {
+        var i = new Ignore('/')
+        i.add(pattern)
+        var isDir = !!/\/$/.exec(path)
+        if (isDir) path = path.slice(0, path.length - 1)
+        i.match(path, isDir).should.equal(!!match)
+    })
+}
