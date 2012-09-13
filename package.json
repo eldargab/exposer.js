@@ -1,18 +1,21 @@
 {
-    "name": "exposer",
-    "description": "Compiles node modules to the browser",
-    "version": "0.0.0",
-    "repository": { "type": "git", "url": "https://github.com/eldargab/exposer.js" },
-    "keywords": ["require", "browser", "compile", "commonjs"],
-    "scripts": {
-        "test": "mocha -R spec"
-    },
-    "dependencies": {
-        "mkdirp": "*",
-        "minimatch": "*"
-    },
-    "devDependencies": {
-        "mocha": "*",
-        "should": "*"
-    }
+  "name": "exposer",
+  "description": "Tool for bundling and compiling things for browser",
+  "version": "0.0.0",
+  "repository": { "type": "git", "url": "https://github.com/eldargab/exposer.js" },
+  "keywords": ["require", "browser", "compile", "bundle"],
+  "scripts": {
+    "test": "mocha -R spec"
+  },
+  "dependencies": {
+    "mkdirp": "*",
+    "minimatch": "*",
+    "string-to-js": "*"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "should": "*",
+    "rimraf": "*",
+    "fake-fs": "0.0.1"
+  }
 }

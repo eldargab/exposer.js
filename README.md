@@ -1,24 +1,23 @@
 #Exposer
 
-Compiles node modules for the browser. It is similiar to
-[browserbuild](https://github.com/LearnBoost/browserbuild),
-[browserify](https://github.com/substack/node-browserify) and friends.
+Bundles and compiles things for browser.
 
 ##Highlights
 
 ``` javascript
-var Bundle = require('exposer').Bundle
+var Bundle = require('exposer').JsBundle
 
 Bundle('build/mylib.js', function () {
-    this.add('.', 'lib', {as: 'mylib'})
-    this.add('node_modules', 'debug')
-    this.add('node_modules', 'progress', function () {
-        this.exclude('legacy-support/')
-    })
-    this.includeRequire()
-    this.include('/* Copyright ...*/')
-    this.register('MyLib', 'mylib')
-    this.closure()
+  this
+  .add('lib', {as: 'mylib'})
+  .add('node_modules', 'debug')
+  .add('node_modules', 'progress', function () {
+    this.exclude('legacy*')
+  })
+  .includeRequire()
+  .include('/* Copyright ...*/')
+  .register('MyLib', 'mylib')
+  .closure()
 })
 ```
 
