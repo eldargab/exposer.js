@@ -16,6 +16,7 @@
     "mocha": "*",
     "should": "*",
     "rimraf": "*",
-    "fake-fs": "0.0.1"
+    "fake-fs": "0.0.1",
+    "test-log": "0.0.x"
   }
 }
