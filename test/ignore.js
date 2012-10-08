@@ -13,6 +13,14 @@ describe('Ignore patterns', function () {
     i.add(/hello/)
     i.match('hello').should.be.true
   })
+
+  it('Should work with function', function () {
+    var i = new Ignore('/')
+    i.add(function (p) {
+      return p.indexOf('bar') > 0
+    })
+    i.match('bar').should.be.true
+  })
 })
 
 function test (pattern, path, match) {
