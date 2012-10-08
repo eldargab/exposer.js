@@ -10,12 +10,12 @@ exports.require = util.require
 
 exports.compiler = util.compiler
 
-exports.builder = util.builder
+exports.JsBundle = require('./lib/builders/js-bundle')
 
-function builder (type) {
-  var Builder = util.builder(type)
+
+function builder (Type) {
   return function (target, setup, path, opts) {
-    var b = new Builder(target)
+    var b = new Type(target)
     if (setup) typeof setup == 'function'
       ? setup.apply(b, [].slice.call(arguments, 2))
       : b.add.apply(b, [].slice.call(arguments, 1))
@@ -23,4 +23,6 @@ function builder (type) {
   }
 }
 
-exports.jsBundle = builder('js-bundle')
+exports.js = builder(exports.JsBundle)
+
+exports.bundle = builder(exports.Bundle)

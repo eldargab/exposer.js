@@ -14,7 +14,7 @@ describe('Acceptance tests', function () {
   it('jsBundle', function () {
     var out = targetDir + '/out.js'
 
-    Lib.jsBundle(out, function () {
+    Lib.js(out, function () {
       this.extensions['.html'] = Lib.compiler('js-string')
       this
         .includeRequire()
