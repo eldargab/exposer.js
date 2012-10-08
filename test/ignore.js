@@ -7,6 +7,12 @@ describe('Ignore patterns', function () {
   test('/bin/', '/bin/', matched)
   test('/bin/', '/bin')
   test('*.json', '/package.json', matched)
+
+  it('Should work with RegExp', function () {
+    var i = new Ignore('/')
+    i.add(/hello/)
+    i.match('hello').should.be.true
+  })
 })
 
 function test (pattern, path, match) {
