@@ -11,11 +11,11 @@ describe('Acceptance tests', function () {
     rmdir(targetDir, done)
   })
 
-  it('jsBundle', function () {
+  it('js bundle', function () {
     var out = targetDir + '/out.js'
 
     Lib.js(out, function () {
-      this.extensions['.html'] = Lib.compiler('js-string')
+      this.ext('.html', 'js-string')
       this
         .includeRequire()
         .register('foo', 'foo')

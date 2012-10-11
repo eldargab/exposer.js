@@ -10,8 +10,6 @@ exports.require = util.require
 
 exports.compiler = util.compiler
 
-exports.JsBundle = require('./lib/builders/js-bundle')
-
 
 function builder (Type) {
   return function (target, setup, path, opts) {
@@ -23,6 +21,46 @@ function builder (Type) {
   }
 }
 
-exports.js = builder(exports.JsBundle)
+exports.bundler = function (extend) {
+  function Bundle () {
+    exports.Bundle.apply(this, arguments)
+  }
 
-exports.bundle = builder(exports.Bundle)
+  Bundle.prototype = Object.create(exports.Bundle.prototype)
+
+  Bundle.prototype.extensions = {}
+
+  extend && util.use.apply(Bundle.prototype, arguments)
+
+  return builder(Bundle)
+}
+
+exports.js = exports.bundler(function () {
+  this.onfile = function (f) {
+    return 'require.register("' + f.name + '", function(module, exports, require) {\n'
+      + f.src() + '\n'
+      + '})\n'
+  }
+
+  this.includeRequire = function () {
+    return this.include(util.require())
+  }
+
+  this.register = function (as, main) {
+    return this.append(util.register().replace(/\{\{as\}\}/g, as).replace(/\{\{main\}\}/g, main))
+  }
+
+  this.closure = function () {
+    return this.on('out', function () {
+      this.out = ';(function () {\n'
+        + this.out + '\n'
+        + '})()'
+    })
+  }
+
+  this.ext('.js', 'plain')
+})
+
+exports.css = exports.bundler(function () {
+  this.ext('.css', 'plain')
+})

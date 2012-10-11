@@ -5,7 +5,7 @@ Bundles and compiles things for browser.
 ##Highlights
 
 ``` javascript
-var Bundle = require('exposer').JsBundle
+var Bundle = require('exposer').js
 
 Bundle('build/mylib.js', function () {
   this
