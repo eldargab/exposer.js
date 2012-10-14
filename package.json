@@ -10,7 +10,8 @@
   "dependencies": {
     "mkdirp": "*",
     "minimatch": "*",
-    "string-to-js": "*"
+    "string-to-js": "*",
+    "client-require": "git://github.com/eldargab/require.git#0.0.1"
   },
   "devDependencies": {
     "mocha": "*",

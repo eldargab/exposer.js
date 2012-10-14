@@ -1,6 +1,9 @@
 var Log = require('test-log')
 var Fs = require('fake-fs')
-var Bundle = require('..').Bundle
+var Bundle = require('../lib/bundle')
+var util = require('../lib/util')
+
+util.compiler('plain') // hack to prevent calls to patched file system
 
 describe('Bundle', function () {
   var fs, log, bundle
@@ -9,11 +12,8 @@ describe('Bundle', function () {
     fs = new Fs
     fs.patch()
     log = Log()
-    bundle = new Bundle('bundle').use(function () {
-      this.extensions['.js'] = function (s) {
-        return s
-      }
-    })
+    bundle = new Bundle('bundle')
+    bundle.ext('.js', 'plain')
   })
 
   afterEach(function () {
@@ -24,12 +24,12 @@ describe('Bundle', function () {
     return fs.readFileSync(p, 'utf8')
   }
 
-  it('test bundling', function () {
+  it('Should bundle things', function () {
     fs.file('index.js', 'index')
       .file('hello.js', 'hello')
 
     bundle.onfile = function (f) {
-      return '(' + f.src() + ')'
+      return '(' + f.out() + ')'
     }
 
     bundle.add('.').exec()
@@ -41,6 +41,7 @@ describe('Bundle', function () {
     beforeEach(function () {
       fs.file('index.js', 'index')
       bundle.recompile = false
+      bundle.ext('.js', 'plain')
       bundle.add('.')
     })
 

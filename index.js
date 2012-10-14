@@ -1,19 +1,21 @@
 var util = require('./lib/util')
-
-exports.Bundle = require('./lib/bundle')
-
-exports.Lookup = require('./lib/lookup')
-
-exports.Compile = require('./lib/compile')
+var B = require('./lib/bundle')
 
 exports.require = util.require
 
 exports.compiler = util.compiler
 
+exports.bundler = function (extend) {
+  function Bundle (target) {
+    B.call(this, target)
+  }
 
-function builder (Type) {
+  Bundle.prototype = Object.create(B.prototype)
+
+  extend && util.use.apply(Bundle.prototype, arguments)
+
   return function (target, setup, path, opts) {
-    var b = new Type(target)
+    var b = new Bundle(target)
     if (setup) typeof setup == 'function'
       ? setup.apply(b, [].slice.call(arguments, 2))
       : b.add.apply(b, [].slice.call(arguments, 1))
@@ -21,29 +23,15 @@ function builder (Type) {
   }
 }
 
-exports.bundler = function (extend) {
-  function Bundle () {
-    exports.Bundle.apply(this, arguments)
-  }
-
-  Bundle.prototype = Object.create(exports.Bundle.prototype)
-
-  Bundle.prototype.extensions = {}
-
-  extend && util.use.apply(Bundle.prototype, arguments)
-
-  return builder(Bundle)
-}
-
 exports.js = exports.bundler(function () {
   this.onfile = function (f) {
     return 'require.register("' + f.name + '", function(module, exports, require) {\n'
-      + f.src() + '\n'
+      + f.out() + '\n'
       + '})\n'
   }
 
   this.includeRequire = function () {
-    return this.include(util.require())
+    return this.include(require('client-require'))
   }
 
   this.register = function (as, main) {

@@ -1,121 +1,118 @@
-var Log = require('test-log')
 var Fs = require('fake-fs')
-var Compile = require('..').Compile
+var Log = require('test-log')
+var resolve = require('path').resolve
+var Compile = require('../lib/compile')
+var util = require('../lib/util')
+
+function compile (root, path, settings, setup) {
+  if (typeof settings == 'function') {
+    setup = settings
+    settings = null
+  }
+  new Compile(root, path, settings).use(setup).exec()
+}
 
 describe('Compile', function () {
-  var fs, log, compile
+  var fs, log
 
   beforeEach(function () {
     fs = new Fs
     fs.patch()
     log = Log()
-    compile = new Compile().use(function () {
-      this.extensions['.js'] = function (s) {
-        return s
-      }
-    })
   })
 
   afterEach(function () {
     fs.unpatch()
   })
 
-  it('test traversal', function () {
-    fs.file('bar/hello.js')
-      .file('foo/world.js')
-      .file('foo/x.txt')
-
-    compile
-      .add('bar')
-      .add('foo', '.')
-      .on('start', log.fn('start'))
-      .on('end', log.fn('end'))
-      .on('file', function (f) {
-        log(f.name)
-      })
-      .exec()
-
-    log.should.equal('start bar/hello world end')
-  })
-
-  it('test file event', function (done) {
-    fs.file('foo.js', 'module.exports = "foo"')
-
-    compile.add('.').on('file', function (f) {
-      f.name.should.equal('foo')
-      f.stat.isFile().should.be.true
-      f.src().should.equal('module.exports = "foo"')
-      f.path.should.equal('foo.js')
-      f.ext.should.equal('.js')
-      done()
-    }).exec()
-  })
-
-  describe('lookup options', function () {
-    it('as', function (done) {
-      fs.file('foo/index.js')
-
-      compile.add('foo', '.', {as: 'baz'}).on('file', function (f) {
-        f.name.should.equal('baz/index')
-        done()
-      }).exec()
-    })
-
-    it('extensions', function () {
-      fs.file('foo.js', 'js')
-        .file('bar.coffee', 'coffee')
-
-      compile.add('.', {
-        extensions: {
-          '.coffee': function () {
-            return 'I am coffee'
-          }
-        }
-      }).on('file', function (f) {
-        log(f.name + '::' + f.src())
-      }).exec()
-
-      log.should.equal('foo::js bar::I am coffee')
-    })
-
-    it('excludes', function () {
-      fs.file('foo.js')
-      compile
-        .add('.', {exclude: {'foo*': true}})
-        .on('file', log.fn('fail'))
-        .exec()
-      log.should.be.empty
-    })
-
-    it('setup function', function (done) {
-      fs.at('bar/baz')
-        .file('template.tpl', 'hello')
-        .file('foo.js')
-
-      compile
-        .add('.', function (arg1, arg2) {
-          arg1.should.equal(1)
-          arg2.should.equal(2)
-          this.exclude('bar/')
-        }, 1, 2)
-
-        .add('bar', 'baz', function (arg1, arg2) {
-          arg1.should.equal(1)
-          arg2.should.equal(2)
-          this.as = 'qux'
-          this.extensions['.tpl'] = function (s) {
-            s.should.equal('hello')
-            return 'Hey, I am template'
-          }
-          this.exclude('foo*')
-        }, 1, 2)
-
-        .on('file', function (f) {
-          f.name.should.equal('qux/template')
-          f.src().should.equal('Hey, I am template')
+  describe('Traversed file', function () {
+    it('Should have right properties', function (done) {
+      fs.file('root/subdir/foo.txt', 'hello')
+      compile('root', '.', function () {
+        this.on('traverse', function (f) {
+          f.name.should.equal('subdir/foo')
+          f.ext.should.equal('.txt')
+          f.stat.isFile().should.be.true
+          f.path.should.equal('root/subdir/foo.txt')
+          f.read().should.equal('hello')
           done()
         })
-        .exec()
+      })
+    })
+
+    it('"as" setting should be respected', function (done) {
+      fs.file('subdir/app.js')
+      compile('.', 'subdir', function () {
+        this.as = 'super'
+        this.on('traverse', function (f) {
+          f.name.should.equal('super/app')
+          done()
+        })
+      })
+    })
+  })
+
+  it('Should traverse all non-excluded files', function () {
+    fs.file('bar/baz/app.js')
+      .file('bar/index.txt')
+      .file('foo/init.backend.js')
+
+    compile('.', '.', function () {
+      this.exclude('*backend*')
+      this.on('traverse', function (f) {
+        log(f.name)
+      })
+    })
+
+    log.should
+      .include('bar/baz/app')
+      .include('bar/index')
+      .not.include('backend')
+  })
+
+  it('Should compile all registered file types', function () {
+    fs.file('bar/baz/foo.js', 'foo')
+      .file('hello.html', 'hello')
+
+    compile('.', '.', function () {
+      this.ext('.js', function (s) {
+        return 'js::' + s
+      })
+      this.ext('.html', function (s) {
+        return 'html::' + s
+      })
+      this.on('out', function (f) {
+        log(f.out())
+      })
+    })
+
+    log.should
+      .include('js::foo')
+      .include('html::hello')
+  })
+
+  it('Should inherit excludes from settings', function () {
+    fs.file('bar/baz.txt')
+    var settings = util.use.call({}, util.Exclude)
+    settings.exclude('*.txt')
+    compile('.', '.', settings, function () {
+      this.on('traverse', function () {
+        throw new Error('failed')
+      })
+    })
+  })
+
+  it('Should inherit extensions from settings', function (done) {
+    fs.unpatch()
+    util.compiler('plain') // TODO: fix fs patching
+    fs.patch()
+    fs.file('bar/baz.txt')
+    var settings = util.use.call({}, util.Extensions)
+    settings.ext('.txt', 'plain')
+    compile('.', '.', settings, function () {
+      this.on('out', function (f) {
+        done()
+      })
     })
   })
 })
